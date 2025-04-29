@@ -76,6 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         }
+
+        // Limpar item sell-out/sell-in
+        if (e.target.closest('.clear-item')) {
+          const itemRow = e.target.closest('.item-row');
+          clearItemFields(itemRow);
+        }
+
+        // Limpar item merchandising
+        if (e.target.closest('.clear-merch-item')) {
+          const itemRow = e.target.closest('.merch-item-row');
+          clearItemFields(itemRow);
+        }
       });
       
       // Event delegation para cálculo automático do valor da verba
@@ -225,6 +237,20 @@ document.addEventListener('DOMContentLoaded', () => {
           option.value = produto;
           prodSelect.appendChild(option);
         });
+      });
+    }
+
+    // Função para limpar os campos de um item
+    function clearItemFields(itemRow) {
+      const inputs = itemRow.querySelectorAll('input[type="number"], input[type="text"]');
+      const selects = itemRow.querySelectorAll('select');
+
+      inputs.forEach(input => {
+        input.value = '';
+      });
+
+      selects.forEach(select => {
+        select.value = ''; // Reseta para a primeira opção (vazia)
       });
     }
   });
