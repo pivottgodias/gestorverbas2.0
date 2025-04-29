@@ -36,6 +36,9 @@ const Templates = {
     clearButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
     itemRow.querySelector('.item-header').appendChild(clearButton);
 
+    // Mantenha o botão de remover
+    const removeButton = clone.querySelector('.remove-item');
+    itemRow.querySelector('.item-header').appendChild(removeButton);
 
     return { clone, itemId };
   },
@@ -60,6 +63,10 @@ const Templates = {
     clearButton.title = 'Limpar campos';
     clearButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
     itemRow.querySelector('.item-header').appendChild(clearButton);
+
+    // Mantenha o botão de remover
+    const removeButton = clone.querySelector('.remove-merch-item');
+    itemRow.querySelector('.item-header').appendChild(removeButton);
 
     return { clone, itemId };
   },
