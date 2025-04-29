@@ -11,17 +11,14 @@
   <div class="container">
     <h2>Cadastro de Verba</h2>
     
-    <!-- Loading overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display:none">
       <div class="spinner"></div>
       <p>Processando, aguarde...</p>
     </div>
     
-    <!-- Toast para notificações -->
     <div id="toast" class="toast"></div>
 
     <form id="form-dossie" novalidate>
-      <!-- Campos do formulário mantidos originais -->
       <fieldset class="common-fields">
         <legend>Informações Gerais</legend>
         <div class="row">
@@ -36,11 +33,37 @@
             <div class="error-message" id="mercado-error"></div>
           </div>
         </div>
-        <!-- Demais campos mantidos -->
+        <div class="row">
+          <div class="form-group">
+            <label for="cidade">Cidade</label>
+            <input id="cidade" name="cidade">
+            <div class="error-message" id="cidade-error"></div>
+          </div>
+          <div class="form-group">
+            <label for="uf">UF <span class="required">*</span></label>
+            <select id="uf" name="uf" required aria-required="true">
+              <option value="">Selecione...</option>
+              <option value="AC">PR</option>
+              <option value="AL">MS</option>
+              <option value="SP">SP</option>
+            </select>
+            <div class="error-message" id="uf-error"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label for="vendedor">Vendedor <span class="required">*</span></label>
+            <input id="vendedor" name="vendedor" required aria-required="true">
+            <div class="error-message" id="vendedor-error"></div>
+          </div>
+          <div class="form-group">
+            <label for="contrato">Contrato</label>
+            <input id="contrato" name="contrato">
+          </div>
+        </div>
       </fieldset>
 
       <div class="tabs">
-        <!-- Tabs navigation mantido original -->
         <ul class="tabs-nav" role="tablist">
           <li class="tab active" role="tab" aria-selected="true" aria-controls="sell-out" data-tab="sell-out">
             <i class="fas fa-shopping-cart"></i> SELL OUT
@@ -53,72 +76,176 @@
           </li>
         </ul>
 
-        <!-- Conteúdo das tabs mantido -->
+        <div id="sell-out" class="tab-content active" role="tabpanel">
+          <h3>Itens – SELL OUT</h3>
+          <div id="items-container-sell-out" class="items-container">
+            </div>
+          <button type="button" id="add-item-sell-out" class="btn-add">
+            <i class="fas fa-plus"></i> Adicionar item
+          </button>
+          <div class="summary">
+            <div>Total de itens: <span id="sell-out-count">0</span></div>
+            <div>Valor total: R$ <span id="sell-out-total">0.00</span></div>
+          </div>
+        </div>
+
+        <div id="sell-in" class="tab-content" role="tabpanel">
+          <h3>Itens – SELL IN</h3>
+          <div id="items-container-sell-in" class="items-container">
+            </div>
+          <button type="button" id="add-item-sell-in" class="btn-add">
+            <i class="fas fa-plus"></i> Adicionar item
+          </button>
+          <div class="summary">
+            <div>Total de itens: <span id="sell-in-count">0</span></div>
+            <div>Valor total: R$ <span id="sell-in-total">0.00</span></div>
+          </div>
+        </div>
+
+        <div id="merch" class="tab-content" role="tabpanel">
+          <h3>Itens – Merchandising</h3>
+          <div id="merch-items-container" class="items-container">
+            </div>
+          <button type="button" id="add-merch-item" class="btn-add">
+            <i class="fas fa-plus"></i> Adicionar item
+          </button>
+          <div class="summary">
+            <div>Total de itens: <span id="merch-count">0</span></div>
+            <div>Valor total: R$ <span id="merch-total">0.00</span></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Templates modificados -->
-      <template id="item-template">
-        <div class="item-row" data-id="{id}">
-          <div class="item-header">
-            <h4>Item #{number}</h4>
-            <div class="item-actions">
-              <button type="button" class="clear-item btn-icon" title="Limpar campos" aria-label="Limpar campos">
-                <i class="fas fa-redo-alt"></i>
-              </button>
-              <button type="button" class="remove-item btn-icon" title="Remover item" aria-label="Remover item">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-          <div class="row">
-            <div class="form-group">
-              <label>Família</label>
-              <select name="item_familia[]" class="item-familia">
-                <option value="">Selecione…</option>
-              </select>
-              <div class="error-message"></div>
-            </div>
-            <!-- Restante do template original -->
-          </div>
+      <fieldset class="file-upload">
+        <legend>Arquivos Anexos</legend>
+        <div class="form-group">
+          <label for="dossie_files">Arquivos (.pdf, .jpg, .png)</label>
+          <input type="file" id="dossie_files" name="dossie_files[]" accept=".pdf,.jpg,.jpeg,.png" multiple>
+          <div class="file-preview" id="file-preview"></div>
         </div>
-      </template>
+      </fieldset>
 
-      <template id="merch-item-template">
-        <div class="merch-item-row" data-id="{id}">
-          <div class="item-header">
-            <h4>Item #{number}</h4>
-            <div class="item-actions">
-              <button type="button" class="clear-merch-item btn-icon" title="Limpar campos" aria-label="Limpar campos">
-                <i class="fas fa-redo-alt"></i>
-              </button>
-              <button type="button" class="remove-merch-item btn-icon" title="Remover item" aria-label="Remover item">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-          <div class="row">
-            <div class="form-group">
-              <label>Verba (R$)</label>
-              <input type="number" step="0.01" min="0" class="merch-item-verba" name="merch_item_verba[]">
-              <div class="error-message"></div>
-            </div>
-            <!-- Restante do template original -->
-          </div>
-        </div>
-      </template>
-
-      <!-- Scripts mantidos originais -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-      <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
-      <script src="data/produtos.js"></script>
-      <script src="js/templates.js"></script>
-      <script src="js/validation.js"></script>
-      <script src="js/pdf-generator.js"></script>
-      <script src="js/ui.js"></script>
-      <script src="js/main.js"></script>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-file-pdf"></i> Salvar e Gerar Dossiê
+        </button>
+      </div>
     </form>
+
+    <button id="btn-docusign" class="btn-secondary" style="display:none;">
+      <i class="fas fa-signature"></i> Enviar para Assinatura (DocuSign)
+    </button>
   </div>
+
+  <template id="item-template">
+    <div class="item-row" data-id="{id}">
+      <div class="item-header">
+        <h4>Item #{number}</h4>
+        <button type="button" class="remove-item btn-icon" title="Remover item" aria-label="Remover item">
+          <i class="fas fa-trash"></i>
+        </button>
+        <button type="button" class="clear-item btn-icon" title="Limpar campos" aria-label="Limpar campos">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Família</label>
+          <select name="item_familia[]" class="item-familia">
+            <option value="">Selecione…</option>
+          </select>
+          <div class="error-message"></div>
+        </div>
+        <div class="form-group">
+          <label>Produto</label>
+          <select name="item_produto[]" class="item-produto">
+            <option value="">Selecione…</option>
+          </select>
+          <div class="error-message"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Unidades</label>
+          <input type="number" min="1" class="item-unidades" name="item_unidades[]">
+          <div class="error-message"></div>
+        </div>
+        <div class="form-group">
+          <label>Bonificação (R$)</label>
+          <input type="number" step="0.001" min="0" class="item-bonificacao" name="item_bonificacao[]">
+          <div class="error-message"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Verba (R$)</label>
+          <input type="number" step="0.01" readonly class="item-verba" name="item_verba[]">
+        </div>
+        <div class="form-group">
+          <label>TTC (R$)</label>
+          <input type="number" step="0.01" min="0" name="item_ttc[]">
+        </div>
+        <div class="form-group">
+          <label>TTV (R$)</label>
+          <input type="number" step="0.01" min="0" name="item_ttv[]">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="merch-item-template">
+    <div class="merch-item-row" data-id="{id}">
+      <div class="item-header">
+        <h4>Item #{number}</h4>
+        <button type="button" class="remove-merch-item btn-icon" title="Remover item" aria-label="Remover item">
+          <i class="fas fa-trash"></i>
+        </button>
+        <button type="button" class="clear-merch-item btn-icon" title="Limpar campos" aria-label="Limpar campos">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Verba (R$)</label>
+          <input type="number" step="0.01" min="0" class="merch-item-verba" name="merch_item_verba[]">
+          <div class="error-message"></div>
+        </div>
+        <div class="form-group">
+          <label>Opção</label>
+          <select name="merch_item_opcao[]" class="merch-item-opcao">
+            <option value="">Selecione…</option>
+            <option>PONTA DE GÔNDOLA</option>
+            <option>ÁREA FRIA</option>
+            <option>PONTO EXTRA</option>
+            <option>OUTRO</option>
+          </select>
+          <div class="error-message"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Foto</label>
+          <input type="file" accept="image/*" name="merch_item_photo[]" class="merch-item-photo">
+          <div class="image-preview"></div>
+        </div>
+        <div class="form-group merch-custom-option" style="display:none">
+          <label>Especifique</label>
+          <input type="text" name="merch_item_custom[]" class="merch-item-custom">
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+  
+  <script src="data/produtos.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/pdf-generator.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
