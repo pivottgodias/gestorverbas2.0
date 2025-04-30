@@ -679,45 +679,32 @@ const PDFGenerator = {
     });
   },
   
-// Alterações nos métodos de coleta de dados:
-
-// Modificação 1: Método collectRows para filtrar linhas com verba igual a 0
-collectRows(containerId, isSellIn = false) {
-  const prefix = isSellIn ? '_in' : '';
-  return Array.from(document.getElementById(containerId).querySelectorAll('.item-row'))
-    .map(r => [
-      r.querySelector(`[name^="item_familia${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_produto${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_unidades${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_bonificacao${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_verba${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttc${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttv${prefix}"]`).value || ''
-    ])
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 4) não é exatamente 0
-      const verba = parseFloat(r[4]) || 0;
-      return verba !== 0;
-    });
-},
-
-// Modificação 2: Método collectMerchRows para filtrar linhas com verba igual a 0
-collectMerchRows() {
-  return Array.from(document.querySelectorAll('.merch-item-row'))
-    .map(r => {
-      const opcao = r.querySelector('[name="merch_item_opcao[]"]').value;
-      const custom = r.querySelector('[name="merch_item_custom[]"]')?.value;
-      
-      return [
-        r.querySelector('[name="merch_item_verba[]"]').value || '',
-        opcao === 'OUTRO' && custom ? custom : opcao
-      ];
-    })
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 0) não é exatamente 0
-      const verba = parseFloat(r[0]) || 0;
-      return verba !== 0;
-    });
-}
+  collectRows(containerId, isSellIn = false) {
+    const prefix = isSellIn ? '_in' : '';
+    return Array.from(document.getElementById(containerId).querySelectorAll('.item-row'))
+      .map(r => [
+        r.querySelector(`[name^="item_familia${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_produto${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_unidades${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_bonificacao${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_verba${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_ttc${prefix}"]`).value || '',
+        r.querySelector(`[name^="item_ttv${prefix}"]`).value || ''
+      ])
+      .filter(r => r.some(c => c !== ''));
+  },
+  
+  collectMerchRows() {
+    return Array.from(document.querySelectorAll('.merch-item-row'))
+      .map(r => {
+        const opcao = r.querySelector('[name="merch_item_opcao[]"]').value;
+        const custom = r.querySelector('[name="merch_item_custom[]"]')?.value;
+        
+        return [
+          r.querySelector('[name="merch_item_verba[]"]').value || '',
+          opcao === 'OUTRO' && custom ? custom : opcao
+        ];
+      })
+      .filter(r => r.some(c => c !== ''));
+  }
+};
