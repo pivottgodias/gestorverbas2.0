@@ -679,7 +679,7 @@ const PDFGenerator = {
     });
   },
   
- // Alterações nos métodos de coleta de dados:
+// Alterações nos métodos de coleta de dados:
 
 // Modificação 1: Método collectRows para filtrar linhas com verba igual a 0
 collectRows(containerId, isSellIn = false) {
