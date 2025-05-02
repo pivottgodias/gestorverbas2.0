@@ -15,6 +15,11 @@ const PDFGenerator = {
     }
   },
   
+  // Função auxiliar para converter texto para caixa alta
+  toUpperCase(text) {
+    return text ? String(text).toUpperCase() : '';
+  },
+  
   async generateDossie(formData) {
     try {
       UI.showLoading();
@@ -44,22 +49,22 @@ const PDFGenerator = {
       );
       
       // Adicionar cabeçalho com destaque visual
-      this.addHeader(doc, 'Dossiê de Verba', y);
+      this.addHeader(doc, 'DOSSIÊ DE VERBA', y); // Já em caixa alta
       y += 16;
       
-      // Adicionar caixa de informações
+      // Adicionar caixa de informações com valores em caixa alta
       y = this.addInfoBox(doc, {
-        rede: formData.rede,
-        mercado: formData.mercado,
-        cidade_uf: `${formData.cidade} - ${formData.uf}`,
-        vendedor: formData.vendedor,
-        contrato: formData.contrato,
+        rede: this.toUpperCase(formData.rede),
+        mercado: this.toUpperCase(formData.mercado),
+        cidade_uf: this.toUpperCase(`${formData.cidade} - ${formData.uf}`),
+        vendedor: this.toUpperCase(formData.vendedor),
+        contrato: this.toUpperCase(formData.contrato),
         data: new Date().toLocaleDateString('pt-BR')
       }, y);
       
       y += 10;
       
-      // SELL OUT com estilo aprimorado
+      // SELL OUT com estilo aprimorado e valores em caixa alta
       const sellOutRows = this.collectRows('items-container-sell-out');
       if (sellOutRows.length) {
         this.addSectionTitle(doc, 'SELL OUT', y, this.styles.colors.primary);
@@ -105,7 +110,7 @@ const PDFGenerator = {
         y = doc.lastAutoTable.finalY + 10;
       }
       
-      // SELL IN com estilo aprimorado
+      // SELL IN com estilo aprimorado e valores em caixa alta
       const sellInRows = this.collectRows('items-container-sell-in', true);
       if (sellInRows.length) {
         this.addSectionTitle(doc, 'SELL IN', y, this.styles.colors.secondary);
@@ -156,7 +161,7 @@ const PDFGenerator = {
         y = margin;
       }
       
-      // MERCHANDISING com layout aprimorado
+      // MERCHANDISING com layout aprimorado e valores em caixa alta
       const merchRows = this.collectMerchRows();
       if (merchRows.length) {
         this.addSectionTitle(doc, 'MERCHANDISING', y, this.styles.colors.accent);
@@ -272,6 +277,17 @@ const PDFGenerator = {
       // Substitui caracteres problemáticos para nomes de arquivo
       const nomeArquivoSeguro = nomeArquivo.replace(/[\\/:*?"<>|]/g, '_');
 
+      // Enviar dados para o Google Sheets antes do download
+      await this.enviarParaGoogleSheets(formData, {
+        sellOutRows,
+        sellInRows, 
+        merchRows,
+        totalSellOut,
+        totalSellIn,
+        totalMerch,
+        totalGeral
+      });
+
       // Inicia o download com o novo nome de arquivo
       // Verifica se a função download existe no escopo global
       if (typeof download === 'function') {
@@ -298,6 +314,89 @@ const PDFGenerator = {
       console.error('Erro ao gerar PDF:', error);
       UI.hideLoading();
       UI.showToast('Erro ao gerar o dossiê. Tente novamente.', 'error');
+      return false;
+    }
+  },
+  
+  // Método para integração com Google Sheets
+  async enviarParaGoogleSheets(formData, dados) {
+    try {
+      // URL do seu Google Apps Script Web App
+      const scriptURL = 'SUA_URL_DO_GOOGLE_APPS_SCRIPT_WEB_APP_AQUI';
+      
+      // Data formatada
+      const dataFormatada = new Date().toLocaleDateString('pt-BR');
+      
+      // Preparar os dados para o Google Sheets
+      const dadosPrincipais = {
+        data: dataFormatada,
+        rede: this.toUpperCase(formData.rede),
+        mercado: this.toUpperCase(formData.mercado),
+        cidade: this.toUpperCase(formData.cidade),
+        uf: this.toUpperCase(formData.uf),
+        vendedor: this.toUpperCase(formData.vendedor),
+        contrato: this.toUpperCase(formData.contrato),
+        totalSellOut: dados.totalSellOut,
+        totalSellIn: dados.totalSellIn,
+        totalMerch: dados.totalMerch,
+        totalGeral: dados.totalGeral
+      };
+      
+      // Preparar itens do Sell Out
+      const itensSellOut = dados.sellOutRows.map(row => ({
+        tipo: 'SELL OUT',
+        familia: this.toUpperCase(row[0]),
+        produto: this.toUpperCase(row[1]),
+        unidades: row[2],
+        bonificacao: row[3],
+        verba: row[4],
+        ttc: row[5],
+        ttv: row[6]
+      }));
+      
+      // Preparar itens do Sell In
+      const itensSellIn = dados.sellInRows.map(row => ({
+        tipo: 'SELL IN',
+        familia: this.toUpperCase(row[0]),
+        produto: this.toUpperCase(row[1]),
+        unidades: row[2],
+        bonificacao: row[3],
+        verba: row[4],
+        ttc: row[5],
+        ttv: row[6]
+      }));
+      
+      // Preparar itens de Merchandising
+      const itensMerch = dados.merchRows.map(row => ({
+        tipo: 'MERCHANDISING',
+        verba: row[0],
+        opcao: this.toUpperCase(row[1])
+      }));
+      
+      // Dados completos para envio
+      const dadosParaEnvio = {
+        principal: dadosPrincipais,
+        itens: [...itensSellOut, ...itensSellIn, ...itensMerch]
+      };
+      
+      // Enviar para o Google Sheets via fetch
+      const response = await fetch(scriptURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dadosParaEnvio)
+      });
+      
+      if (response.ok) {
+        console.log('Dados enviados com sucesso para o Google Sheets');
+        return true;
+      } else {
+        console.error('Erro ao enviar dados para o Google Sheets');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro na integração com Google Sheets:', error);
       return false;
     }
   },
@@ -367,39 +466,39 @@ const PDFGenerator = {
     let textY = y + padding + 4;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Rede:', margin + padding, textY);
+    doc.text('REDE:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.rede, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Mercado:', margin + padding, textY);
+    doc.text('MERCADO:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.mercado, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Cidade/UF:', margin + padding, textY);
+    doc.text('CIDADE/UF:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.cidade_uf, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Vendedor:', margin + padding, textY);
+    doc.text('VENDEDOR:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.vendedor, margin + 40, textY);
     textY += lineHeight;
     
     if (info.contrato) {
       doc.setFont(this.styles.fonts.body, 'bold');
-      doc.text('Contrato:', margin + padding, textY);
+      doc.text('CONTRATO:', margin + padding, textY);
       doc.setFont(this.styles.fonts.body, 'normal');
       doc.text(info.contrato, margin + 40, textY);
       textY += lineHeight;
     }
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Data:', margin + padding, textY);
+    doc.text('DATA:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.data, margin + 40, textY);
     
@@ -484,7 +583,7 @@ const PDFGenerator = {
     doc.setFont(this.styles.fonts.header, 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...this.styles.colors.dark);
-    doc.text('Assinaturas', margin, y + 10);
+    doc.text('ASSINATURAS', margin, y + 10);
     
     // Linha decorativa abaixo do título
     doc.setDrawColor(...this.styles.colors.dark);
@@ -580,143 +679,4 @@ const PDFGenerator = {
     }
   },
   
-  // Adiciona fotos de merchandising com layout melhorado
-  async addEnhancedMerchandisingPhotos(pdfDoc, merchPhotosData) {
-    const helvB = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-    const helv = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-    
-    if (merchPhotosData.length > 0) {
-      /* Comentado a página separadora
-      const separatorPage = pdfDoc.addPage([595, 841]);
-      separatorPage.drawRectangle({
-        x: 0,
-        y: 741,
-        width: 595,
-        height: 100,
-        color: PDFLib.rgb(0.95, 0.77, 0.06)
-      });
-      
-      separatorPage.drawText('FOTOS DE MERCHANDISING', {
-        x: 595 / 2 - 150,
-        y: 791,
-        size: 28,
-        font: helvB,
-        color: PDFLib.rgb(0.2, 0.2, 0.2)
-      });
-      */
-    }
-    
-    for (let i = 0; i < merchPhotosData.length; i++) {
-      if (!merchPhotosData[i]) continue;
-      
-      const { dataUrl, type } = merchPhotosData[i];
-      if (!dataUrl) continue;
-      
-      const img = type.includes('png')
-        ? await pdfDoc.embedPng(dataUrl)
-        : await pdfDoc.embedJpg(dataUrl);
-        
-      const pg = pdfDoc.addPage([595, 841]);
-      
-      // Cabeçalho estilizado
-      pg.drawRectangle({
-        x: 0,
-        y: 791,
-        width: 595,
-        height: 50,
-        color: PDFLib.rgb(0.95, 0.77, 0.06)
-      });
-      
-      pg.drawText(`Foto de Merchandising ${i + 1}`, {
-        x: 20,
-        y: 816,
-        size: 18,
-        font: helvB,
-        color: PDFLib.rgb(0.2, 0.2, 0.2)
-      });
-      
-      const margin = 50;
-      const maxWidth = 595 - (margin * 2);
-      const maxHeight = 700;
-      
-      const { width, height } = img.scaleToFit(maxWidth, maxHeight);
-      
-      pg.drawRectangle({
-        x: (595 - width - 10) / 2,
-        y: (791 - height - 10) / 2 - 30,
-        width: width + 10,
-        height: height + 10,
-        borderColor: PDFLib.rgb(0.95, 0.77, 0.06),
-        borderWidth: 3,
-        color: PDFLib.rgb(1, 1, 1)
-      });
-      
-      pg.drawImage(img, {
-        x: (595 - width) / 2,
-        y: (791 - height) / 2 - 30,
-        width,
-        height
-      });
-      
-      pg.drawText(`Página ${i + 1} de ${merchPhotosData.filter(p => p).length}`, {
-        x: 295,
-        y: 30,
-        size: 10,
-        font: helv,
-        color: PDFLib.rgb(0.5, 0.5, 0.5),
-        align: 'center'
-      });
-    }
-  },
-  
-  // Métodos auxiliares
-  readFileAsDataURL(file) {
-    return new Promise(resolve => {
-      if (!file) resolve(null);
-      const reader = new FileReader();
-      reader.onload = () => resolve({ dataUrl: reader.result, type: file.type });
-      reader.readAsDataURL(file);
-    });
-  },
-  
-// Correção para o método collectRows
-collectRows(containerId, isSellIn = false) {
-  const prefix = isSellIn ? '_in' : '';
-  return Array.from(document.getElementById(containerId).querySelectorAll('.item-row'))
-    .map(r => [
-      r.querySelector(`[name^="item_familia${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_produto${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_unidades${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_bonificacao${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_verba${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttc${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttv${prefix}"]`).value || ''
-    ])
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 4) é maior que zero
-      const verba = parseFloat(r[4]) || 0;
-      return verba > 0;
-    });
-},
-
-// Correção para o método collectMerchRows
-collectMerchRows() {
-  return Array.from(document.querySelectorAll('.merch-item-row'))
-    .map(r => {
-      const opcao = r.querySelector('[name="merch_item_opcao[]"]').value;
-      const custom = r.querySelector('[name="merch_item_custom[]"]')?.value;
-      
-      return [
-        r.querySelector('[name="merch_item_verba[]"]').value || '',
-        opcao === 'OUTRO' && custom ? custom : opcao
-      ];
-    })
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 0) é maior que zero
-      const verba = parseFloat(r[0]) || 0;
-      return verba > 0;
-    });
-}
-};
+  //
