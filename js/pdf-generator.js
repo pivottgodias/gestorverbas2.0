@@ -44,17 +44,17 @@ const PDFGenerator = {
       );
       
       // Adicionar cabeçalho com destaque visual
-      this.addHeader(doc, 'Dossiê de Verba', y);
+      this.addHeader(doc, 'DOSSIÊ DE VERBA', y);
       y += 16;
       
       // Adicionar caixa de informações
       y = this.addInfoBox(doc, {
-        rede: formData.rede,
-        mercado: formData.mercado,
-        cidade_uf: `${formData.cidade} - ${formData.uf}`,
-        vendedor: formData.vendedor,
-        contrato: formData.contrato,
-        data: new Date().toLocaleDateString('pt-BR')
+        rede: formData.rede.toUpperCase(),
+        mercado: formData.mercado.toUpperCase(),
+        cidade_uf: `${formData.cidade.toUpperCase()} - ${formData.uf.toUpperCase()}`,
+        vendedor: formData.vendedor.toUpperCase(),
+        contrato: formData.contrato.toUpperCase(),
+        data: new Date().toLocaleDateString('pt-BR').toUpperCase()
       }, y);
       
       y += 10;
@@ -74,17 +74,17 @@ const PDFGenerator = {
             fillColor: this.styles.colors.primary, 
             textColor: 255, 
             fontStyle: 'bold',
-            fontSize: 9, // Reduzido de 10 para 9
-            cellPadding: 3 // Reduzido de 4 para 3
+            fontSize: 9,
+            cellPadding: 3
           },
           bodyStyles: {
-            fontSize: 8, // Reduzido de 9 para 8
-            cellPadding: 3 // Reduzido de 4 para 3
+            fontSize: 8,
+            cellPadding: 3
           },
-          margin: { left: 15, right: 15 }, // Reduz de margin (20) para 15
+          margin: { left: 15, right: 15 },
           styles: { 
             overflow: 'linebreak',
-            cellWidth: 'auto', // Mudado de 'wrap' para 'auto'
+            cellWidth: 'auto',
             halign: 'center',
             valign: 'middle'
           },
@@ -95,8 +95,7 @@ const PDFGenerator = {
             0: { fontStyle: 'bold' }
           },
           didParseCell: (data) => {
-            // Aumentar largura das colunas específicas
-            if (data.column.index === 1) { // Coluna de produto
+            if (data.column.index === 1) {
               data.cell.styles.cellWidth = 40;
             }
           }
@@ -120,17 +119,17 @@ const PDFGenerator = {
             fillColor: this.styles.colors.secondary, 
             textColor: 255, 
             fontStyle: 'bold',
-            fontSize: 9, // Reduzido de 10 para 9
-            cellPadding: 3 // Reduzido de 4 para 3
+            fontSize: 9,
+            cellPadding: 3
           },
           bodyStyles: {
-            fontSize: 8, // Reduzido de 9 para 8
-            cellPadding: 3 // Reduzido de 4 para 3
+            fontSize: 8,
+            cellPadding: 3
           },
-          margin: { left: 15, right: 15 }, // Reduz de margin (20) para 15
+          margin: { left: 15, right: 15 },
           styles: { 
             overflow: 'linebreak',
-            cellWidth: 'auto', // Mudado de 'wrap' para 'auto'
+            cellWidth: 'auto',
             halign: 'center',
             valign: 'middle'
           },
@@ -168,20 +167,20 @@ const PDFGenerator = {
           body: merchRows.map((r, i) => [r[0], r[1], '']),
           theme: 'grid',
           styles: { 
-            cellPadding: 4, // Reduzido de 6 para 4
-            fontSize: 8 // Reduzido de 9 para 8
+            cellPadding: 4,
+            fontSize: 8
           },
           columnStyles: { 
-            2: { cellWidth: 25 }, // Reduzido de 30 para 25
-            1: { cellWidth: 65 } // Reduzido de 70 para 65
+            2: { cellWidth: 25 },
+            1: { cellWidth: 65 }
           },
           headStyles: { 
             fillColor: this.styles.colors.accent, 
             textColor: 0, 
             fontStyle: 'bold',
-            fontSize: 9 // Reduzido de 10 para 9
+            fontSize: 9
           },
-          margin: { left: 15, right: 15 }, // Reduz de margin (20) para 15
+          margin: { left: 15, right: 15 },
           alternateRowStyles: {
             fillColor: [248, 250, 252]
           },
@@ -191,7 +190,6 @@ const PDFGenerator = {
               if (!imgObj) return;
               const mode = imgObj.type.includes('png') ? 'PNG' : 'JPEG';
               
-              // Centralizar e dimensionar melhor a miniatura
               const cellWidth = data.cell.width;
               const cellHeight = data.cell.height;
               const imgSize = Math.min(cellWidth - 8, cellHeight - 8);
@@ -241,8 +239,7 @@ const PDFGenerator = {
       y += 15;
 
       // Verificar se há espaço suficiente para as assinaturas
-      // Se não houver, adicionar uma nova página
-      const spaceNeededForSignatures = 60; // Ajuste esse valor conforme necessário
+      const spaceNeededForSignatures = 60;
       if (y + spaceNeededForSignatures > pageHeight - margin) {
         doc.addPage();
         y = margin;
@@ -264,20 +261,18 @@ const PDFGenerator = {
       const finalBytes = await pdfDoc.save();
       
       // Formatação da data no padrão DD-MM-YYYY para usar no nome do arquivo
-      const dataHoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+      const dataHoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-').toUpperCase();
 
       // Formatação do nome do arquivo seguindo o padrão solicitado
-      const nomeArquivo = `${formData.rede || 'sem-rede'}-${formData.vendedor || 'sem-vendedor'}-${formData.contrato || 'sem-contrato'}-${formData.uf || 'sem-estado'}-${dataHoje}.pdf`;
+      const nomeArquivo = `${formData.rede.toUpperCase() || 'SEM-REDE'}-${formData.vendedor.toUpperCase() || 'SEM-VENDEDOR'}-${formData.contrato.toUpperCase() || 'SEM-CONTRATO'}-${formData.uf.toUpperCase() || 'SEM-ESTADO'}-${dataHoje}.pdf`;
 
       // Substitui caracteres problemáticos para nomes de arquivo
       const nomeArquivoSeguro = nomeArquivo.replace(/[\\/:*?"<>|]/g, '_');
 
       // Inicia o download com o novo nome de arquivo
-      // Verifica se a função download existe no escopo global
       if (typeof download === 'function') {
         download(finalBytes, nomeArquivoSeguro, 'application/pdf');
       } else {
-        // Alternativa caso a função download não esteja disponível
         const blob = new Blob([finalBytes], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -290,14 +285,14 @@ const PDFGenerator = {
       }
       
       UI.hideLoading();
-      UI.showToast('Dossiê gerado com sucesso!', 'success');
+      UI.showToast('DOSSIÊ GERADO COM SUCESSO!', 'success');
       document.getElementById('btn-docusign').style.display = 'block';
       
       return true;
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       UI.hideLoading();
-      UI.showToast('Erro ao gerar o dossiê. Tente novamente.', 'error');
+      UI.showToast('ERRO AO GERAR O DOSSIÊ. TENTE NOVAMENTE.', 'error');
       return false;
     }
   },
@@ -306,17 +301,14 @@ const PDFGenerator = {
   addHeader(doc, title, y) {
     const pageWidth = doc.internal.pageSize.width;
     
-    // Desenhar retângulo de cabeçalho
     doc.setFillColor(...this.styles.colors.dark);
     doc.rect(0, 0, pageWidth, y + 15, 'F');
     
-    // Adicionar título
     doc.setTextColor(255);
     doc.setFont(this.styles.fonts.header, 'bold');
     doc.setFontSize(24);
     doc.text(title, pageWidth / 2, y + 10, { align: 'center' });
     
-    // Restaurar cor de texto
     doc.setTextColor(0);
     doc.setFont(this.styles.fonts.body, 'normal');
   },
@@ -326,17 +318,14 @@ const PDFGenerator = {
     const pageWidth = doc.internal.pageSize.width;
     const margin = 20;
     
-    // Desenhar barra colorida
     doc.setFillColor(...color);
     doc.roundedRect(margin, y - 2, pageWidth - (margin * 2), 10, 2, 2, 'F');
     
-    // Texto do título
     doc.setTextColor(255);
     doc.setFont(this.styles.fonts.header, 'bold');
     doc.setFontSize(12);
     doc.text(title, pageWidth / 2, y + 4, { align: 'center' });
     
-    // Restaurar cor de texto
     doc.setTextColor(0);
     doc.setFont(this.styles.fonts.body, 'normal');
   },
@@ -347,59 +336,54 @@ const PDFGenerator = {
     const margin = 20;
     const boxWidth = pageWidth - (margin * 2);
     
-    // Altura dinâmica baseada no conteúdo
     const lineHeight = 7;
     const padding = 6;
     let boxHeight = Object.keys(info).length * lineHeight + (padding * 2);
     if (info.contrato) boxHeight += lineHeight;
     
-    // Desenhar caixa de fundo
-    doc.setFillColor(248, 250, 252); // Cor de fundo suave
+    doc.setFillColor(248, 250, 252);
     doc.setDrawColor(...this.styles.colors.primary);
     doc.roundedRect(margin, y, boxWidth, boxHeight, 3, 3, 'FD');
     
-    // Estilos para o texto
     doc.setFontSize(10);
-    doc.setFont(this.styles.fonts.body, 'normal');
     doc.setTextColor(0);
     
-    // Adicionar informações
     let textY = y + padding + 4;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Rede:', margin + padding, textY);
+    doc.text('REDE:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.rede, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Mercado:', margin + padding, textY);
+    doc.text('MERCADO:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.mercado, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Cidade/UF:', margin + padding, textY);
+    doc.text('CIDADE/UF:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.cidade_uf, margin + 40, textY);
     textY += lineHeight;
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Vendedor:', margin + padding, textY);
+    doc.text('VENDEDOR:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.vendedor, margin + 40, textY);
     textY += lineHeight;
     
     if (info.contrato) {
       doc.setFont(this.styles.fonts.body, 'bold');
-      doc.text('Contrato:', margin + padding, textY);
+      doc.text('CONTRATO:', margin + padding, textY);
       doc.setFont(this.styles.fonts.body, 'normal');
       doc.text(info.contrato, margin + 40, textY);
       textY += lineHeight;
     }
     
     doc.setFont(this.styles.fonts.body, 'bold');
-    doc.text('Data:', margin + padding, textY);
+    doc.text('DATA:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.text(info.data, margin + 40, textY);
     
@@ -412,17 +396,14 @@ const PDFGenerator = {
     const margin = 20;
     const boxWidth = pageWidth - (margin * 2);
     
-    // Altura dinâmica
     const lineHeight = 7;
     const padding = 8;
     const boxHeight = 5 * lineHeight + (padding * 2);
     
-    // Desenhar caixa de fundo
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(...this.styles.colors.dark);
     doc.roundedRect(margin, y, boxWidth, boxHeight, 3, 3, 'FD');
     
-    // Título da caixa
     doc.setFillColor(...this.styles.colors.dark);
     doc.roundedRect(margin, y, boxWidth, 10, 3, 3, 'F');
     doc.setTextColor(255);
@@ -430,15 +411,12 @@ const PDFGenerator = {
     doc.setFontSize(12);
     doc.text('RESUMO FINANCEIRO', pageWidth / 2, y + 7, { align: 'center' });
     
-    // Adicionar valores
     let textY = y + padding + 14;
     doc.setFontSize(10);
     doc.setTextColor(0);
     
-    // Função para formatar valores monetários
     const formatCurrency = (value) => `R$ ${value.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
     
-    // Valores parciais
     doc.setFont(this.styles.fonts.body, 'bold');
     doc.text('TOTAL SELL OUT:', margin + padding, textY);
     doc.setFont(this.styles.fonts.body, 'normal');
@@ -457,11 +435,9 @@ const PDFGenerator = {
     doc.text(formatCurrency(totals.merch), margin + boxWidth - padding - 50, textY, { align: 'right' });
     textY += lineHeight;
     
-    // Linha separadora
     doc.setDrawColor(180, 180, 180);
     doc.line(margin + padding, textY - 1, margin + boxWidth - padding, textY - 1);
     
-    // Total geral com destaque
     textY += 4;
     doc.setFont(this.styles.fonts.body, 'bold');
     doc.setFontSize(12);
@@ -478,45 +454,35 @@ const PDFGenerator = {
     const margin = 20;
     const signWidth = 70;
     const signMargin = 10;
-    const lineY = 20;
     
-    // Título da seção
     doc.setFont(this.styles.fonts.header, 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...this.styles.colors.dark);
-    doc.text('Assinaturas', margin, y + 10);
+    doc.text('ASSINATURAS', margin, y + 10);
     
-    // Linha decorativa abaixo do título
     doc.setDrawColor(...this.styles.colors.dark);
     doc.setLineWidth(0.5);
     doc.line(margin, y + 12, margin + 40, y + 12);
     
-    // Calcular posições X para centralizar
     let startX;
     if (includeExtra) {
-      // Três assinaturas
       startX = (pageWidth - (3 * signWidth + 2 * signMargin)) / 2;
     } else {
-      // Duas assinaturas
       startX = (pageWidth - (2 * signWidth + signMargin)) / 2;
     }
     
-    // Desenhar linhas de assinatura
     y += 30;
     doc.setLineWidth(0.5);
     
-    // Primeira assinatura
     doc.line(startX, y, startX + signWidth, y);
     doc.setFont(this.styles.fonts.body, 'normal');
     doc.setFontSize(10);
     doc.text('RAFAEL SPERB', startX + signWidth/2, y + 5, { align: 'center' });
     
-    // Segunda assinatura
     let secondX = startX + signWidth + signMargin;
     doc.line(secondX, y, secondX + signWidth, y);
     doc.text('WELLINGTON MARTINS', secondX + signWidth/2, y + 5, { align: 'center' });
     
-    // Terceira assinatura (condicional)
     if (includeExtra) {
       let thirdX = secondX + signWidth + signMargin;
       doc.line(thirdX, y, thirdX + signWidth, y);
@@ -549,7 +515,6 @@ const PDFGenerator = {
       });
       */
 
-      // Adicionar os anexos
       for (const file of fileList) {
         const buf = await file.arrayBuffer();
         if (file.type === 'application/pdf') {
@@ -618,7 +583,6 @@ const PDFGenerator = {
         
       const pg = pdfDoc.addPage([595, 841]);
       
-      // Cabeçalho estilizado
       pg.drawRectangle({
         x: 0,
         y: 791,
@@ -627,7 +591,7 @@ const PDFGenerator = {
         color: PDFLib.rgb(0.95, 0.77, 0.06)
       });
       
-      pg.drawText(`Foto de Merchandising ${i + 1}`, {
+      pg.drawText(`FOTO DE MERCHANDISING ${i + 1}`, {
         x: 20,
         y: 816,
         size: 18,
@@ -658,7 +622,7 @@ const PDFGenerator = {
         height
       });
       
-      pg.drawText(`Página ${i + 1} de ${merchPhotosData.filter(p => p).length}`, {
+      pg.drawText(`PÁGINA ${i + 1} DE ${merchPhotosData.filter(p => p).length}`, {
         x: 295,
         y: 30,
         size: 10,
@@ -679,44 +643,40 @@ const PDFGenerator = {
     });
   },
   
-// Correção para o método collectRows
-collectRows(containerId, isSellIn = false) {
-  const prefix = isSellIn ? '_in' : '';
-  return Array.from(document.getElementById(containerId).querySelectorAll('.item-row'))
-    .map(r => [
-      r.querySelector(`[name^="item_familia${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_produto${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_unidades${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_bonificacao${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_verba${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttc${prefix}"]`).value || '',
-      r.querySelector(`[name^="item_ttv${prefix}"]`).value || ''
-    ])
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 4) é maior que zero
-      const verba = parseFloat(r[4]) || 0;
-      return verba > 0;
-    });
-},
+  collectRows(containerId, isSellIn = false) {
+    const prefix = isSellIn ? '_in' : '';
+    return Array.from(document.getElementById(containerId).querySelectorAll('.item-row'))
+      .map(r => [
+        (r.querySelector(`[name^="item_familia${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_produto${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_unidades${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_bonificacao${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_verba${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_ttc${prefix}"]`).value || '').toUpperCase(),
+        (r.querySelector(`[name^="item_ttv${prefix}"]`).value || '').toUpperCase()
+      ])
+      .filter(r => r.some(c => c !== ''))
+      .filter(r => {
+        const verba = parseFloat(r[4]) || 0;
+        return verba > 0;
+      });
+  },
 
-// Correção para o método collectMerchRows
-collectMerchRows() {
-  return Array.from(document.querySelectorAll('.merch-item-row'))
-    .map(r => {
-      const opcao = r.querySelector('[name="merch_item_opcao[]"]').value;
-      const custom = r.querySelector('[name="merch_item_custom[]"]')?.value;
-      
-      return [
-        r.querySelector('[name="merch_item_verba[]"]').value || '',
-        opcao === 'OUTRO' && custom ? custom : opcao
-      ];
-    })
-    .filter(r => r.some(c => c !== ''))
-    .filter(r => {
-      // Filtrar linhas onde a verba (índice 0) é maior que zero
-      const verba = parseFloat(r[0]) || 0;
-      return verba > 0;
-    });
-}
+  collectMerchRows() {
+    return Array.from(document.querySelectorAll('.merch-item-row'))
+      .map(r => {
+        const opcao = r.querySelector('[name="merch_item_opcao[]"]').value.toUpperCase();
+        const custom = r.querySelector('[name="merch_item_custom[]"]')?.value.toUpperCase() || '';
+        
+        return [
+          (r.querySelector('[name="merch_item_verba[]"]').value || '').toUpperCase(),
+          opcao === 'OUTRO' && custom ? custom : opcao
+        ];
+      })
+      .filter(r => r.some(c => c !== ''))
+      .filter(r => {
+        const verba = parseFloat(r[0]) || 0;
+        return verba > 0;
+      });
+  }
 };
